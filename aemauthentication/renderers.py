@@ -12,7 +12,7 @@ class UserJSONRenderer(JSONRenderer):
         # the default JSONRenderer to handle rendering errors, so we need to
         # check for this case.
         errors = data.get('errors', None)
-        
+
         # If we receive a `token` key as part of the response, it will be a
         # byte object. Byte objects don't serialize well, so we need to
         # decode it before rendering the User object.
