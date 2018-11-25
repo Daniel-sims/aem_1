@@ -21,7 +21,7 @@ class UserManager(BaseUserManager):
     to create `User` objects.
     """
 
-    def create_user(self, username, email, password):
+    def create_user(self, username, email, password, company_id):
         """Create and return a `User` with an email, username and password."""
         if username is None:
             raise TypeError('Users must have a username.')
@@ -29,20 +29,23 @@ class UserManager(BaseUserManager):
         if email is None:
             raise TypeError('Users must have an email address.')
 
-        user = self.model(username=username, email=self.normalize_email(email))
+        if company_id is None:
+            raise TypeError('Users must have a Company Id')
+
+        user = self.model(username=username, email=self.normalize_email(email), company_id=company_id)
         user.set_password(password)
         user.save()
 
         return user
 
-    def create_superuser(self, username, email, password):
+    def create_superuser(self, username, email, password, company_id):
         """
         Create and return a `User` with superuser (admin) permissions.
         """
         if password is None:
             raise TypeError('Superusers must have a password.')
 
-        user = self.create_user(username, email, password)
+        user = self.create_user(username, email, password, company_id)
         user.is_superuser = True
         user.is_staff = True
         user.save()
@@ -82,14 +85,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
 
     # company_id is used to identify which company this user belongs to
-    company_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    company_id = models.CharField(max_length=255, unique=True)
 
     # More fields required by Django when specifying a custom user model.
 
     # The `USERNAME_FIELD` property tells us which field we will use to log in.
-    # In this case we want it to be the email field.
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
 
     # Tells Django that the UserManager class defined above should manage
     # objects of this type.
