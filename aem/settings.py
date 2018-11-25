@@ -43,6 +43,8 @@ INSTALLED_APPS = [
 
     'aemauthentication.apps.AuthenticationConfig',
 
+    'core.apps.CoreConfig',
+
     'clients.apps.ClientsConfig',
 ]
 
@@ -53,6 +55,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ],
+
+    'EXCEPTION_HANDLER': 'aem.apps.core.exceptions.core_exception_handler',
+    'NON_FIELD_ERRORS_KEY': 'error',
 }
 
 AUTH_USER_MODEL = 'aemauthentication.User'
