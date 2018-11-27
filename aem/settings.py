@@ -42,9 +42,8 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'aemauthentication.apps.AuthenticationConfig',
-
+    'company.apps.CompanyConfig',
     'core.apps.CoreConfig',
-
     'clients.apps.ClientsConfig',
 ]
 
