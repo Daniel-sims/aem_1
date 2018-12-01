@@ -1,29 +1,33 @@
-from rest_framework import status
-from rest_framework.permissions import AllowAny
+from django.http import JsonResponse
+from rest_framework import status, permissions
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from company.renderers import CompanyJSONRenderer
+from company.models import Company
 from company.serializers import CompanySerializer
 
 
-class CreateCompanyAPIView(APIView):
-    """
-        Creates a company with an ID and a Name.
-        Ideally this View should be Authenticated but I can't think of a smooth way
-        of doing it.
-    """
+class OnlyAEMPermission(permissions.BasePermission):
+    message = 'Requires AEM Admin permission.'
 
-    permission_classes = (AllowAny,)
-    renderer_classes = (CompanyJSONRenderer,)
+    def has_permission(self, request, view):
+        return self.request.user.has_perm('aem_admin')
+
+
+class CreateCompanyAPIView(APIView):
+    permission_classes = (IsAuthenticated, permissions.DjangoModelPermissions)
     serializer_class = CompanySerializer
+    queryset = Company.objects.get_queryset()
 
     def post(self, request):
-        company = request.data.get('company', {})
-        print(company)
+        print(request.data)
+        serializer = self.serializer_class(data=request.data)
 
-        serializer = self.serializer_class(data=company)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if serializer.is_valid():
+            print('is valid')
+            print(serializer)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -9,6 +9,6 @@ class CompanySerializer(serializers.ModelSerializer):
 
         fields = ['company_id', 'name']
 
-    def create_company(self, validated_data):
-        # Use the `create_user` method we wrote earlier to create a new user.
+    def create(self, validated_data):
+        print('create company called')
         return Company.objects.create_company(**validated_data)

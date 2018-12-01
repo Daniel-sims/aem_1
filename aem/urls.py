@@ -9,9 +9,14 @@ from company import views as company_views
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('user/', authentication_views.UserRetrieveUpdateAPIView.as_view()),
-    path('users/', authentication_views.RegistrationAPIView.as_view()),
-    path('users/login/', authentication_views.LoginAPIView.as_view()),
+    # Endpoint to create AEM Customer Admin
+    path('users/admin/', authentication_views.RegistrationAPIView.as_view()),
+
+    # Endpoint to create AEM Customer Engineers
+    path('users/', authentication_views.CreateUserAPIView.as_view()),
+
+    # Endpoint to authenticate all users
+    path('users/login/', authentication_views.LoginAPIView.as_view(), name="login"),
 
     path('company/', company_views.CreateCompanyAPIView.as_view()),
 

@@ -45,12 +45,14 @@ INSTALLED_APPS = [
     'company.apps.CompanyConfig',
     'core.apps.CoreConfig',
     'clients.apps.ClientsConfig',
+    'groups.apps.GroupsConfig',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'aemauthentication.backends.JWTAuthentication',
+
     ],
 
     'DEFAULT_PERMISSION_CLASSES': [
