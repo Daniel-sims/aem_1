@@ -24,42 +24,14 @@ class UserManager(BaseUserManager):
     def get_queryset(self):
         return UserQuerySet(self.model, using=self._db).active_and_not_deleted()
 
-    def create_user(self, username, email, password, company=None, group=None):
+    def create_user(self, username, email, password, aem_group=None, company=None):
         user = self.model(username=username, email=self.normalize_email(email), company=company)
         user.set_password(password)
         user.save()
 
-        if not group:
-            group = Group.objects.get(name='Default Group')
-
-        user.groups.add(group)
-        user.save()
-
-        return user
-
-    def create_aem_customer_admin(self, username, email, password, company):
-        if company is None:
-            raise TypeError('AEM Customer Admins must be linked to a company.')
-
-        user = self.create_user(
-            username=username,
-            email=email,
-            password=password,
-            company=company)
-        user.is_staff = True
-        user.is_superuser = True
-        user.save()
-
-        return user
-
-    def create_aem_superuser(self, username, email, password):
-        user = self.create_user(
-            username=username,
-            email=email,
-            password=password)
-        user.is_staff = True
-        user.is_superuser = True
-        user.save()
+        if aem_group:
+            user.groups.add(aem_group)
+            user.save()
 
         return user
 

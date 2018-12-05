@@ -13,13 +13,6 @@ class CompanyManager(models.Manager):
     def get_queryset(self):
         return CompanyQuerySet(self.model, using=self._db).active_and_not_deleted()
 
-    def create_company(self, company_id, name):
-        print(company_id)
-        company = Company(company_id=company_id, name=name)
-        company.save()
-
-        return company
-
 
 class Company(models.Model):
     company_id = models.CharField(primary_key=True, max_length=256, null=False, unique=True)

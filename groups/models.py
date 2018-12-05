@@ -1,25 +1,47 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-class GroupQuerySet(models.QuerySet):
+
+class AemGroupQuerySet(models.QuerySet):
     def for_company(self):
         return self.filter()
 
 
-class GroupManager(models.Manager):
+class AemGroupManager(models.Manager):
 
     def get_queryset(self):
-        return GroupQuerySet(self.model, using=self._db).for_company()
-
-    def create_group(self):
-        pass
+        return AemGroupQuerySet(self.model, using=self._db).for_company()
 
 
-class CompanyGroup(Group):
+class AemGroup(models.Model):
+    linked_group = models.ForeignKey(Group, related_name='aemgroup', on_delete=models.CASCADE)
     slug_field = models.SlugField()
-    company_id = models.CharField(max_length=256, null=False)
 
-    objects = GroupManager()
+    objects = AemGroupManager()
 
     def __str__(self):
         return self.slug_field
+
+    """
+    Override the save method for creating a new CompanyGroup.
+    
+    When creating a new CompanyGroup, create a new permission for the Group that associates with adding to the group.
+    
+    I.E if you're creating the group "AEM Admin" with the slug "aem-admin", a permission called "Can add aem admin"
+    will be created, which allows you to assign this permission to other groups, so when a user tries to create a user
+    with the slugs "aem-admin" they will require the permission "Can add aem admin".
+    """
+    def save(self, **kwargs):
+        # If we're saving a new CompanyGroup
+        if not self.id:
+            # Create a new permission group using the slug field as the identifier.
+            p = Permission.objects.all().filter(name='Can add {}'.format(self.slug_field))
+            if not p:
+                Permission.objects.create(
+                    name='Can add {}'.format(self.slug_field),
+                    content_type=ContentType.objects.get_for_model(AemGroup),
+                    codename='can_add_{}'.format(self.slug_field)
+                )
+
+        super().save(**kwargs)

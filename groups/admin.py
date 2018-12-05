@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from groups.models import CompanyGroup
+from groups.models import AemGroup
 
-admin.site.register(CompanyGroup)
+admin.site.register(AemGroup)

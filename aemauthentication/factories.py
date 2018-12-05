@@ -1,0 +1,52 @@
+import factory
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
+
+from aemauthentication.models import User
+from groups.models import AemGroup
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = User
+
+    username = factory.Faker('first_name')
+    password = 'Password01'
+    email = factory.LazyAttribute(lambda a: '{0}@example.com'.format(a.username).lower())
+
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for group in extracted:
+                self.groups.add(group.linked_group)
+
+
+class GroupsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Group
+
+    name = ""
+
+
+class AemGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AemGroup
+
+    linked_group = factory.SubFactory(GroupsFactory)
+    slug_field = ""
+
+    @factory.post_generation
+    def can_add_permission_slugs(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for slug in extracted:
+                self.linked_group.permissions.add(Permission.objects.get_or_create(
+                    name='Can add {}'.format(slug),
+                    content_type=ContentType.objects.get_for_model(AemGroup),
+                    codename='can_add_{}'.format(slug)
+                )[0])
