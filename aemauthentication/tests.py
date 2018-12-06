@@ -21,6 +21,7 @@ def get_user_permissions(user):
 class UserTestCase(APITestCase):
     AEM_ADMIN_SLUG_FIELD = 'aem-admin'
     AEM_EMPLOYEE_SLUG_FIELD = 'aem-employee'
+    AEM_CUSTOMER_SUPER_USER_SLUG_FIELD = "aem-customer-super-user"
     AEM_CUSTOMER_ADMIN_SLUG_FIELD = 'aem-customer-admin'
     AEM_CUSTOMER_USER_SLUG_FIELD = 'aem-customer-user'
 
@@ -38,6 +39,15 @@ class UserTestCase(APITestCase):
         self.aem_employee_group = AemGroupFactory.create(
             slug_field=self.AEM_EMPLOYEE_SLUG_FIELD,
             linked_group__name="Aem Employee",
+            can_add_permission_slugs=(
+                self.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
+                self.AEM_CUSTOMER_USER_SLUG_FIELD,
+            )
+        )
+
+        self.aem_customer_super_user_group = AemGroupFactory.create(
+            slug_field=self.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD,
+            linked_group__name="Aem Customer Super Admin",
             can_add_permission_slugs=(
                 self.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
                 self.AEM_CUSTOMER_USER_SLUG_FIELD,
@@ -65,6 +75,11 @@ class UserTestCase(APITestCase):
         response = self.client.post(reverse('create-user'), data)
 
         self.assertEqual(response.status_code, expected_status_code)
+
+    """
+    AEM Admin
+    - An AEM Admin should have access to create AEM Employee, AEM Customer Admin and AEM Customer User accounts
+    """
 
     def test_aem_admin_user_cant_create_aem_admin(self):
         user = UserFactory.create(groups=(self.aem_admin_group,))
@@ -102,6 +117,11 @@ class UserTestCase(APITestCase):
             "aem_group": self.AEM_CUSTOMER_USER_SLUG_FIELD
         }, expected_status_code=status.HTTP_201_CREATED)
 
+    """
+    AEM Employee 
+    - An AEM Employee should have access to create AEM Customer Admin accounts and and AEM Customer User accounts
+    """
+
     def test_aem_employee_cant_create_aem_admin(self):
         user = UserFactory.create(groups=(self.aem_employee_group,))
         self._test_permission(user=user, data={
@@ -138,6 +158,53 @@ class UserTestCase(APITestCase):
             "aem_group": self.AEM_CUSTOMER_USER_SLUG_FIELD
         }, expected_status_code=status.HTTP_201_CREATED)
 
+    """
+     Customer Super Admin - Created on creation of a company
+      - A customer super admin should have the privileges to create both AEM Customer 
+        Admin and AEM Customer User accounts.
+    """
+
+    def test_aem_customer_super_user_cant_create_aem_admin(self):
+        user = UserFactory.create(groups=(self.aem_customer_super_user_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemAdmin",
+            "email": "newAemAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_customer_super_user_cant_create_aem_employee(self):
+        user = UserFactory.create(groups=(self.aem_customer_super_user_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemEmlpoyee",
+            "email": "newAemEmlpoyee@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_EMPLOYEE_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_customer_super_user_can_create_aem_customer_admin(self):
+        user = UserFactory.create(groups=(self.aem_customer_super_user_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerAdmin",
+            "email": "newCustomerAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_201_CREATED)
+
+    def test_aem_customer_super_user_can_create_aem_customer_user(self):
+        user = UserFactory.create(groups=(self.aem_customer_super_user_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerUser",
+            "email": "newCustomerUser@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_USER_SLUG_FIELD
+        }, expected_status_code=status.HTTP_201_CREATED)
+
+    """
+    Customer Admin tests
+    - Customer Admins should only have the privileges to create AEM Customer User accounts.
+    """
+
     def test_aem_customer_admin_user_cant_create_aem_admin(self):
         user = UserFactory.create(groups=(self.aem_customer_admin_group,))
         self._test_permission(user=user, data={
@@ -173,6 +240,11 @@ class UserTestCase(APITestCase):
             "password": "Passw0rd01",
             "aem_group": self.AEM_CUSTOMER_USER_SLUG_FIELD
         }, expected_status_code=status.HTTP_201_CREATED)
+
+    """
+    Customer User 
+    - A customer user should have no privileges to create users 
+    """
 
     def test_aem_customer_user_cant_create_aem_admin(self):
         user = UserFactory.create(groups=(self.aem_customer_user_group,))
