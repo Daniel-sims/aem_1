@@ -16,7 +16,7 @@ class AemGroupManager(models.Manager):
 
 class AemGroup(models.Model):
     linked_group = models.ForeignKey(Group, related_name='aemgroup', on_delete=models.CASCADE)
-    slug_field = models.SlugField()
+    slug_field = models.SlugField(unique=True)
 
     objects = AemGroupManager()
 
@@ -35,13 +35,10 @@ class AemGroup(models.Model):
     def save(self, **kwargs):
         # If we're saving a new CompanyGroup
         if not self.id:
-            # Create a new permission group using the slug field as the identifier.
-            p = Permission.objects.all().filter(name='Can add {}'.format(self.slug_field))
-            if not p:
-                Permission.objects.create(
-                    name='Can add {}'.format(self.slug_field),
-                    content_type=ContentType.objects.get_for_model(AemGroup),
-                    codename='can_add_{}'.format(self.slug_field)
-                )
+            Permission.objects.get_or_create(
+                name='Can add {}'.format(self.slug_field),
+                content_type=ContentType.objects.get_for_model(AemGroup),
+                codename='can_add_{}'.format(self.slug_field)
+            )
 
         super().save(**kwargs)

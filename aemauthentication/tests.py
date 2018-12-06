@@ -2,6 +2,7 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.test import TestCase, Client
+from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIRequestFactory, force_authenticate, APITestCase
 
@@ -44,7 +45,7 @@ class UserTestCase(APITestCase):
         )
 
         self.aem_customer_admin_group = AemGroupFactory.create(
-            slug_field=self.AEM_ADMIN_SLUG_FIELD,
+            slug_field=self.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
             linked_group__name="Aem Customer Admin",
             can_add_permission_slugs=(
                 self.AEM_CUSTOMER_USER_SLUG_FIELD,
@@ -52,43 +53,159 @@ class UserTestCase(APITestCase):
         )
 
         self.aem_customer_user_group = AemGroupFactory.create(
-            slug_field=self.AEM_EMPLOYEE_SLUG_FIELD,
+            slug_field=self.AEM_CUSTOMER_USER_SLUG_FIELD,
             linked_group__name="Aem Customer User",
             can_add_permission_slugs=())
 
     def tearDown(self):
         pass
 
-    def test_aem_admin_group_permissions(self):
-        aem_admin = UserFactory.create(groups=(self.aem_admin_group,))
-        self.assertEqual(len(get_user_permissions(aem_admin)), 3)
-        self.assertSetEqual(
-            aem_admin.get_all_permissions(),
-            {
-                'groups.can_add_{}'.format(self.AEM_EMPLOYEE_SLUG_FIELD),
-                'groups.can_add_{}'.format(self.AEM_CUSTOMER_ADMIN_SLUG_FIELD),
-                'groups.can_add_{}'.format(self.AEM_CUSTOMER_USER_SLUG_FIELD),
-            }
-        )
+    def _test_permission(self, user, data, expected_status_code):
+        self.client.force_authenticate(user=user)
+        response = self.client.post(reverse('create-user'), data)
 
-        aem_employee = UserFactory.create(groups=(self.aem_employee_group,))
-        self.assertEqual(len(get_user_permissions(aem_employee)), 2)
-        self.assertSetEqual(
-            aem_employee.get_all_permissions(),
-            {
-                'groups.can_add_{}'.format(self.AEM_CUSTOMER_ADMIN_SLUG_FIELD),
-                'groups.can_add_{}'.format(self.AEM_CUSTOMER_USER_SLUG_FIELD),
-            }
-        )
+        self.assertEqual(response.status_code, expected_status_code)
 
-        aem_customer_admin = UserFactory.create(groups=(self.aem_customer_admin_group,))
-        self.assertEqual(len(get_user_permissions(aem_customer_admin)), 1)
-        self.assertSetEqual(
-            aem_customer_admin.get_all_permissions(),
-            {
-                'groups.can_add_{}'.format(self.AEM_CUSTOMER_USER_SLUG_FIELD),
-            }
-        )
+    def test_aem_admin_user_cant_create_aem_admin(self):
+        user = UserFactory.create(groups=(self.aem_admin_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemAdmin",
+            "email": "newAemAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
 
-        aem_customer_user = UserFactory.create(groups=(self.aem_customer_user_group,))
-        self.assertEqual(len(get_user_permissions(aem_customer_user)), 0)
+    def test_aem_admin_user_can_create_aem_employee(self):
+        user = UserFactory.create(groups=(self.aem_admin_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemEmlpoyee",
+            "email": "newAemEmlpoyee@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_EMPLOYEE_SLUG_FIELD
+        }, expected_status_code=status.HTTP_201_CREATED)
+
+    def test_aem_admin_user_can_create_aem_customer_admin(self):
+        user = UserFactory.create(groups=(self.aem_admin_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerAdmin",
+            "email": "newCustomerAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_201_CREATED)
+
+    def test_aem_admin_user_can_create_aem_customer_user(self):
+        user = UserFactory.create(groups=(self.aem_admin_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerUser",
+            "email": "newCustomerUser@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_USER_SLUG_FIELD
+        }, expected_status_code=status.HTTP_201_CREATED)
+
+    def test_aem_employee_cant_create_aem_admin(self):
+        user = UserFactory.create(groups=(self.aem_employee_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemAdmin",
+            "email": "newAemAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_employee_cant_create_aem_employee(self):
+        user = UserFactory.create(groups=(self.aem_employee_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemEmlpoyee",
+            "email": "newAemEmlpoyee@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_EMPLOYEE_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_employee_can_create_aem_customer_admin(self):
+        user = UserFactory.create(groups=(self.aem_employee_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerAdmin",
+            "email": "newCustomerAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_201_CREATED)
+
+    def test_aem_employee_can_create_aem_customer_user(self):
+        user = UserFactory.create(groups=(self.aem_employee_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerUser",
+            "email": "newCustomerUser@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_USER_SLUG_FIELD
+        }, expected_status_code=status.HTTP_201_CREATED)
+
+    def test_aem_customer_admin_user_cant_create_aem_admin(self):
+        user = UserFactory.create(groups=(self.aem_customer_admin_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemAdmin",
+            "email": "newAemAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_customer_admin_user_cant_create_aem_employee(self):
+        user = UserFactory.create(groups=(self.aem_customer_admin_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemEmlpoyee",
+            "email": "newAemEmlpoyee@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_EMPLOYEE_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_customer_admin_user_cant_create_aem_customer_admin(self):
+        user = UserFactory.create(groups=(self.aem_customer_admin_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerAdmin",
+            "email": "newCustomerAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_customer_admin_user_can_create_aem_customer_user(self):
+        user = UserFactory.create(groups=(self.aem_customer_admin_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerUser",
+            "email": "newCustomerUser@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_USER_SLUG_FIELD
+        }, expected_status_code=status.HTTP_201_CREATED)
+
+    def test_aem_customer_user_cant_create_aem_admin(self):
+        user = UserFactory.create(groups=(self.aem_customer_user_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemAdmin",
+            "email": "newAemAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_customer_user_cant_create_aem_employee(self):
+        user = UserFactory.create(groups=(self.aem_customer_user_group,))
+        self._test_permission(user=user, data={
+            "username": "newAemEmlpoyee",
+            "email": "newAemEmlpoyee@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_EMPLOYEE_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_customer_user_cant_create_aem_customer_admin(self):
+        user = UserFactory.create(groups=(self.aem_customer_user_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerAdmin",
+            "email": "newCustomerAdmin@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_ADMIN_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_aem_customer_user_cant_create_aem_customer_user(self):
+        user = UserFactory.create(groups=(self.aem_customer_user_group,))
+        self._test_permission(user=user, data={
+            "username": "newCustomerUser",
+            "email": "newCustomerUser@outlook.com",
+            "password": "Passw0rd01",
+            "aem_group": self.AEM_CUSTOMER_USER_SLUG_FIELD
+        }, expected_status_code=status.HTTP_403_FORBIDDEN)
