@@ -181,3 +181,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Slug fields for user groups
+AEM_SUPER_USER_SLUG_FIELD = "aem-super-user"
+AEM_ADMIN_SLUG_FIELD = "aem-admin"
+AEM_EMPLOYEE_SLUG_FIELD = "aem-employee"
+AEM_CUSTOMER_SUPER_USER_SLUG_FIELD = "aem-customer-super-user"
+AEM_CUSTOMER_ADMIN_SLUG_FIELD = "aem-customer-admin"
+AEM_CUSTOMER_USER_SLUG_FIELD = "aem-customer-user"

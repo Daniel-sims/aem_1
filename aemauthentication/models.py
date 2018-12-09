@@ -8,10 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import (
     AbstractUser, BaseUserManager,
     Group)
-from django.db import models
-from rest_framework.exceptions import ParseError
-
-from company.models import Company
+from django.db import models, transaction
 
 
 class UserQuerySet(models.QuerySet):
@@ -26,11 +23,17 @@ class UserManager(BaseUserManager):
 
     def create_user(self, username, email, password, aem_group=None, company=None):
         user = self.model(username=username, email=self.normalize_email(email), company=company)
-        user.set_password(password)
-        user.save()
 
-        if aem_group:
-            user.groups.add(aem_group)
+        with transaction.atomic():
+            user.set_password(password)
+            user.save()
+
+            if aem_group:
+                user.groups.add(aem_group)
+
+            if company:
+                user.company = company
+
             user.save()
 
         return user
@@ -47,7 +50,7 @@ class User(AbstractUser):
     last_active = models.DateTimeField(auto_now=True)
 
     # The company which this user is associated with.
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True)
+    company = models.ForeignKey('company.Company', on_delete=models.CASCADE, null=True)
 
     # Indicates whether this user has been deleted or not
     is_deleted = models.BooleanField(default=False)

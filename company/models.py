@@ -1,6 +1,8 @@
-from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
 from django.db.models.manager import BaseManager
+
+from aemauthentication.models import User
+from groups.models import AemGroup
 
 
 class CompanyQuerySet(models.QuerySet):
@@ -12,6 +14,22 @@ class CompanyManager(models.Manager):
 
     def get_queryset(self):
         return CompanyQuerySet(self.model, using=self._db).active_and_not_deleted()
+
+    def create_company(self, company_id, name, super_user_username, super_user_password, super_user_email):
+        company = self.model(company_id=company_id, name=name)
+
+        with transaction.atomic():
+            company.save()
+
+            User.objects.create_user(
+                username=super_user_username,
+                password=super_user_password,
+                email=super_user_email,
+                company=company,
+                aem_group=AemGroup.objects.filter(slug_field='aem-customer-super-user').first().linked_group
+            )
+
+        return company
 
 
 class Company(models.Model):
