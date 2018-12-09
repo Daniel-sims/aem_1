@@ -14,19 +14,11 @@ class CanCreateUserGroupPermission(BasePermission):
     message = "Invalid permissions to create customer."
 
     def has_permission(self, request, view):
-        user_has_permission_to_create_account_type = request.user.has_perm(
-            'groups.can_add_{}'.format(request.data.get('aem_group')))
 
-        if not user_has_permission_to_create_account_type:
+        # First check to see if the user has permission to create the new account
+        if not request.user.has_perm('groups.can_add_{}'.format(request.data.get('aem_group'))):
             self.message = "Invalid permissions to create this account type."
             return False
-
-        user_is_customer = request.user.groups.filter(
-            aemgroup__slug_field=settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD).exists() \
-                           or request.user.groups.filter(
-            aemgroup__slug_field=settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD).exists() \
-                           or request.user.groups.filter(
-            aemgroup__slug_field=settings.AEM_CUSTOMER_USER_SLUG_FIELD).exists()
 
         # If the user group of the new user is to be an AEM Staff account, make sure they're not trying to assign
         # this to a company.
@@ -36,34 +28,36 @@ class CanCreateUserGroupPermission(BasePermission):
                 self.message = "A AEM Admin or AEM Employee account cannot be associated with a company."
                 return False
 
+        # Check to see if the requesting user is in a customer user group
+        user_is_customer = request.user.groups.filter(
+            aemgroup__slug_field=settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD).exists() \
+                           or request.user.groups.filter(
+            aemgroup__slug_field=settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD).exists() \
+                           or request.user.groups.filter(
+            aemgroup__slug_field=settings.AEM_CUSTOMER_USER_SLUG_FIELD).exists()
+
         # If the user is a customer they can only assign users to the same company as them
         if user_is_customer:
-
-            user_company = request.user.company
-
-            if not user_company:
-                # This should only happen if their account has been manually fucked up
+            if not request.user.company:
+                # This should only happen if their account has been manually fucked up.
                 self.message = "User is a customer but is not in a company."
                 return False
 
-            new_user_is_in_users_company = request.user.company.company_id == request.data.get('company')
-
-            if not new_user_is_in_users_company:
+            # If the requesting user is a customer (already in this statement) and is not part of the
+            # same company, they can't do it.
+            if not request.user.company.company_id == request.data.get('company'):
                 self.message = "You cannot create a user that is not in your company."
                 return False
         else:
             # The user is not part of any of the customer groups
-            user_is_aem_staff = request.user.is_superuser or request.user.groups.filter(
-                aemgroup__slug_field=settings.AEM_SUPER_USER_SLUG_FIELD).exists() \
-                                or request.user.groups.filter(
-                aemgroup__slug_field=settings.AEM_ADMIN_SLUG_FIELD).exists() \
-                                or request.user.groups.filter(
-                aemgroup__slug_field=settings.AEM_EMPLOYEE_SLUG_FIELD).exists()
+            request_user_groups = request.user.is_superuser \
+                    or request.user.groups.filter(aemgroup__slug_field=settings.AEM_SUPER_USER_SLUG_FIELD).exists() \
+                    or request.user.groups.filter(aemgroup__slug_field=settings.AEM_ADMIN_SLUG_FIELD).exists() \
+                    or request.user.groups.filter(aemgroup__slug_field=settings.AEM_EMPLOYEE_SLUG_FIELD).exists()
 
-            if not user_is_aem_staff:
-                # Fuck knows how they've managed to get this far and fail
-                self.message = "User is not a customer, but also not a staff member???"
-                return False
+            if not request_user_groups:
+                    self.message = "User is not a customer, but also not a staff member???"
+                    return False
 
         return True
 
