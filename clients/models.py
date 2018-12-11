@@ -13,7 +13,7 @@ class ClientManager(models.Manager):
         return ClientQuerySet(self.model, using=self._db).active_and_not_deleted()
 
     def create_client(self, company, name, account_number, mobile_number,
-                  landline_number, email, description, system_details):
+                      landline_number, email, description, system_details):
         client = self.model(
             name=name,
             account_number=account_number,

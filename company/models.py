@@ -18,7 +18,7 @@ class CompanyManager(models.Manager):
         return CompanyQuerySet(self.model, using=self._db).active_and_not_deleted()
 
     def create_company(self, name, super_user_username, super_user_password, super_user_email):
-        company = self.model(company_id=uuid.uuid4(), name=name)
+        company = self.model(name=name)
 
         with transaction.atomic():
             company.save()
@@ -35,7 +35,7 @@ class CompanyManager(models.Manager):
 
 
 class Company(models.Model):
-    company_id = models.UUIDField(primary_key=True, max_length=256, null=False, unique=True)
+    company_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, blank=False, null=False)
 
     is_active = models.BooleanField(default=True)

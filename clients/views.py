@@ -35,4 +35,4 @@ class ListCreateClientAPIView(ListCreateAPIView):
         return serializer
 
     def get_queryset(self):
-        return Client.objects.filter(company__user=self.request.user)
+        return Client.objects.filter(company=self.request.user.company)
