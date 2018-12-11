@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models, transaction
 from django.db.models.manager import BaseManager
 
@@ -15,8 +17,8 @@ class CompanyManager(models.Manager):
     def get_queryset(self):
         return CompanyQuerySet(self.model, using=self._db).active_and_not_deleted()
 
-    def create_company(self, company_id, name, super_user_username, super_user_password, super_user_email):
-        company = self.model(company_id=company_id, name=name)
+    def create_company(self, name, super_user_username, super_user_password, super_user_email):
+        company = self.model(company_id=uuid.uuid4(), name=name)
 
         with transaction.atomic():
             company.save()
@@ -33,7 +35,7 @@ class CompanyManager(models.Manager):
 
 
 class Company(models.Model):
-    company_id = models.CharField(primary_key=True, max_length=256, null=False, unique=True)
+    company_id = models.UUIDField(primary_key=True, max_length=256, null=False, unique=True)
     name = models.CharField(max_length=100, blank=False, null=False)
 
     is_active = models.BooleanField(default=True)

@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
 from aemauthentication.models import User
+from clients.models import Client
 from groups.models import AemGroup
 
 
@@ -50,3 +51,16 @@ class AemGroupFactory(factory.django.DjangoModelFactory):
                     content_type=ContentType.objects.get_for_model(AemGroup),
                     codename='can_add_{}'.format(slug)
                 )[0])
+
+    @factory.post_generation
+    def client_permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            content_type = ContentType.objects.get_for_model(Client)
+            all_permissions = Permission.objects.filter(content_type=content_type)
+            for perm in extracted:
+                for p in all_permissions:
+                    if p.name == perm:
+                        self.linked_group.permissions.add(p)

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'clients.apps.ClientsConfig',
     'groups.apps.GroupsConfig',
+    'customers.apps.CustomersConfig',
 ]
 
 REST_FRAMEWORK = {
@@ -189,3 +190,6 @@ AEM_EMPLOYEE_SLUG_FIELD = "aem-employee"
 AEM_CUSTOMER_SUPER_USER_SLUG_FIELD = "aem-customer-super-user"
 AEM_CUSTOMER_ADMIN_SLUG_FIELD = "aem-customer-admin"
 AEM_CUSTOMER_USER_SLUG_FIELD = "aem-customer-user"
+
+# Slug fields for creating clients
+ADD_CLIENT_PERMISSION = "clients.add_client"

@@ -15,10 +15,10 @@ class CanCreateCompanyPermission(BasePermission):
     message = "Invalid permissions to create a company."
 
     def has_permission(self, request, view):
-        return request.user.has_perm('Can add company')
+        return request.user.has_perm('company.add_company')
 
 
-class CreateCompanyAPIView(APIView):
+class ListCreateCompanyAPIView(APIView):
     """
     Creates a new Company.
     """

@@ -10,14 +10,15 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('clients', '0001_initial'),
         ('company', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Client',
+            name='Customer',
             fields=[
-                ('client_id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('customer_id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('name', models.CharField(max_length=100)),
                 ('account_number', models.CharField(default=0, max_length=16)),
                 ('mobile_number', models.CharField(blank=True, max_length=14, null=True)),
@@ -26,7 +27,8 @@ class Migration(migrations.Migration):
                 ('system_details', models.CharField(blank=True, max_length=256, null=True)),
                 ('email', models.EmailField(max_length=254)),
                 ('is_deleted', models.BooleanField(default=False)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='client', to='company.Company')),
+                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='customer', to='clients.Client')),
+                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='customer', to='company.Company')),
             ],
         ),
     ]

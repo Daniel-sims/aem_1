@@ -1,6 +1,5 @@
 import itertools
 
-from django.conf import settings
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,28 +10,31 @@ from clients.serializers import ClientSerializer
 from rest_framework import generics, permissions, status
 
 from customers.models import Customer
+from customers.serializers import CustomerSerializer
 
 
-class CanCreateClientPermission(BasePermission):
-    message = "Invalid permissions to create Client."
+class CanCreateCustomerPermission(BasePermission):
+    message = "Invalid permissions to create customer."
 
     def has_permission(self, request, view):
         if not request.user.company:
-            self.message = 'You must be associated with a company to create a client.'
+            self.message = 'You must be associated with a company to create a customer.'
             return False
 
-        return request.user.has_perm(settings.ADD_CLIENT_PERMISSION)
+        return True
 
 
-class ListCreateClientAPIView(ListCreateAPIView):
-    permission_classes = (IsAuthenticated, CanCreateClientPermission,)
-    serializer_class = ClientSerializer
+class CreateCustomerAPIView(ListCreateAPIView):
+    """
+    Creates a new Customer.
+    """
+    permission_classes = (IsAuthenticated, CanCreateCustomerPermission, )
+    serializer_class = CustomerSerializer
 
     def get_serializer(self, *args, **kwargs):
         serializer = super().get_serializer(*args, **kwargs)
         serializer.company = self.request.user.company
-
         return serializer
 
     def get_queryset(self):
-        return Client.objects.filter(company__user=self.request.user)
+        return Customer.objects.filter(company__user=self.request.user)
