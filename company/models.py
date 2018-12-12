@@ -35,7 +35,6 @@ class CompanyManager(models.Manager):
 
 
 class Company(models.Model):
-    company_id = models.UUIDField(default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, blank=False, null=False)
 
     is_active = models.BooleanField(default=True)

@@ -24,7 +24,7 @@ class CanCreateCustomerPermission(BasePermission):
         try:
             client = Client.objects.get(id=request.data['client'])
 
-            if client.company.company_id != request.user.company.company_id:
+            if client.company.id != request.user.company.id:
                 self.message = 'Client does not belong to your company.'
                 return False
         except Client.DoesNotExist:

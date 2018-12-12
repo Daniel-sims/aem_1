@@ -229,7 +229,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_super_user_cant_create_aem_admin(self):
         user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -243,7 +243,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_super_user_cant_create_aem_employee(self):
         user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -257,7 +257,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_super_user_cant_create_aem_customer_super_user(self):
         user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -271,7 +271,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_super_user_can_create_aem_customer_admin(self):
         user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerAdmin",
@@ -280,7 +280,7 @@ class CreateUserTestCase(APITestCase):
             "aem_group": settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
         }, expected_status_code=status.HTTP_201_CREATED,
                               response_contains_kvp=(
-                                  ('company', user.company.company_id),
+                                  ('company', user.company.id),
                                   ('username', 'newAemCustomerAdmin'),
                                   ('email', 'newAemCustomerAdmin@outlook.com'),
                               ))
@@ -292,7 +292,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_super_user_can_create_aem_customer_user(self):
         user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -301,7 +301,7 @@ class CreateUserTestCase(APITestCase):
             "aem_group": settings.AEM_CUSTOMER_USER_SLUG_FIELD,
         }, expected_status_code=status.HTTP_201_CREATED,
                               response_contains_kvp=(
-                                  ('company', user.company.company_id),
+                                  ('company', user.company.id),
                                   ('username', 'newAemCustomerUser'),
                                   ('email', 'newAemCustomerUser@outlook.com'),
                               ))
@@ -323,7 +323,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_admin_cant_create_aem_admin(self):
         user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -337,7 +337,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_admin_cant_create_aem_employee(self):
         user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -351,7 +351,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_admin_cant_create_aem_customer_super_user(self):
         user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -365,7 +365,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_admin_cant_create_aem_customer_admin(self):
         user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerAdmin",
@@ -379,7 +379,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_admin_can_create_aem_customer_user(self):
         user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -388,7 +388,7 @@ class CreateUserTestCase(APITestCase):
             "aem_group": settings.AEM_CUSTOMER_USER_SLUG_FIELD,
         }, expected_status_code=status.HTTP_201_CREATED,
                               response_contains_kvp=(
-                                  ('company', user.company.company_id),
+                                  ('company', user.company.id),
                                   ('email', 'newAemCustomerUser@outlook.com'),
                                   ('username', 'newAemCustomerUser'),
                               ))
@@ -411,7 +411,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_user_cant_create_aem_admin(self):
         user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -425,7 +425,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_user_cant_create_aem_employee(self):
         user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -439,7 +439,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_user_cant_create_aem_customer_super_user(self):
         user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",
@@ -453,7 +453,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_user_cant_create_aem_customer_admin(self):
         user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerAdmin",
@@ -467,7 +467,7 @@ class CreateUserTestCase(APITestCase):
 
     def test_aem_customer_user_cant_create_aem_customer_user(self):
         user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "username": "newAemCustomerUser",

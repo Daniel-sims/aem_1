@@ -93,7 +93,7 @@ class CreateClientTestCase(APITestCase):
 
     def test_aem_customer_super_user_can_create_client(self):
         user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "name": "New Client Name",
@@ -112,7 +112,6 @@ class CreateClientTestCase(APITestCase):
                                   ('email', 'NewClientEmail@email.com'),
                                   ('description', 'Description about New Client goes here'),
                                   ('system_details', 'Details about New Client systems goes here'),
-                                  ('company', user.company.company_id),
                               ))
 
         self.assertIsNotNone(user.company.client.all())
@@ -121,7 +120,7 @@ class CreateClientTestCase(APITestCase):
 
     def test_aem_customer_customer_admin_can_create_client(self):
         user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "name": "New Client Name",
@@ -140,7 +139,6 @@ class CreateClientTestCase(APITestCase):
                                   ('email', 'NewClientEmail@email.com'),
                                   ('description', 'Description about New Client goes here'),
                                   ('system_details', 'Details about New Client systems goes here'),
-                                  ('company', user.company.company_id),
                               ))
 
         self.assertIsNotNone(user.company.client.all())
@@ -149,7 +147,24 @@ class CreateClientTestCase(APITestCase):
 
     def test_aem_customer_user_cant_create_client(self):
         user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create(company_id=uuid.uuid4()))
+                                  company=CompanyFactory.create())
+
+        self._test_permission(user=user, data={
+            "name": "New Client Name",
+            "account_number": "W/A123112328",
+            "mobile_number": "0191 2131247",
+            "landline_number": "07949887097",
+            "email": "NewClientEmail@email.com",
+            "description": "Description about New Client goes here",
+            "system_details": "Details about New Client systems goes here"
+        }, expected_status_code=status.HTTP_403_FORBIDDEN,
+                              response_contains_kvp=(
+                                  ('detail', 'Invalid permissions to create Client.'),))
+
+
+    def test_aem_customer_admin_cant_create_client_for_other_company(self):
+        user = UserFactory.create(groups=(self.aem_customer_user_group,),
+                                  company=CompanyFactory.create())
 
         self._test_permission(user=user, data={
             "name": "New Client Name",
