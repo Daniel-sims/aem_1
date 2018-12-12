@@ -21,7 +21,7 @@ urlpatterns = [
     path('clients/', client_views.ListCreateClientAPIView.as_view(), name="list-create-client"),
 
     # customers
-    path('customers/', customer_views.CreateCustomerAPIView.as_view(), name="create-customer"),
+    path('customers/', customer_views.CreateCustomerAPIView.as_view(), name="list-create-customer"),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
