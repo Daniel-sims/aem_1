@@ -12,10 +12,9 @@ class CustomerManager(models.Manager):
     def get_queryset(self):
         return CustomerQuerySet(self.model, using=self._db).active_and_not_deleted()
 
-    def create_customer(self, company, client, name, account_number, mobile_number,
-                      landline_number, email, description, system_details):
+    def create_customer(self, client, name, account_number, mobile_number,
+                        landline_number, email, description, system_details):
         customer = self.model(
-            company=company,
             client=client,
             name=name,
             account_number=account_number,
@@ -30,17 +29,11 @@ class CustomerManager(models.Manager):
 
 
 class Customer(models.Model):
-    customer_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-    # The company which this Customer is associated with
-    company = models.ForeignKey('company.Company', on_delete=models.CASCADE, null=False, blank=False,
-                                related_name='customer')
-
     # Client which this Customer belongs to
     client = models.ForeignKey('clients.Client', on_delete=models.CASCADE, null=False, blank=False,
                                related_name='customer')
 
-    # Company Name
+    # Customer Name
     name = models.CharField(max_length=100, blank=False, null=False)
 
     # Account Number

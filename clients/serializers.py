@@ -6,13 +6,12 @@ from .models import Client
 
 
 class ClientSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all(), required=False)
-    client_id = serializers.UUIDField(read_only=True)
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all(), required=False, write_only=True)
     customer = CustomerSerializer(many=True, required=False)
 
     class Meta:
         model = Client
-        fields = ('client_id', 'company', 'name', 'account_number', 'mobile_number',
+        fields = ('id', 'company', 'name', 'account_number', 'mobile_number',
                   'landline_number', 'email', 'description', 'system_details', 'customer')
 
     def create(self, validated_data):

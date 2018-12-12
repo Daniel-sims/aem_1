@@ -29,16 +29,14 @@ class ClientManager(models.Manager):
 
 
 class Client(models.Model):
-    client_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
     # The company which this user is associated with.
     company = models.ForeignKey('company.Company', on_delete=models.CASCADE, null=False, blank=False,
                                 related_name='client')
 
-    # Company Name
+    # Client Name
     name = models.CharField(max_length=100, blank=False, null=False)
 
-    # Company Account Number
+    # Client Account Number
     account_number = models.CharField(max_length=16, default=0, blank=False, null=False)
 
     # Mobile Number

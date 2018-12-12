@@ -113,7 +113,6 @@ class CreateClientTestCase(APITestCase):
                                   ('description', 'Description about New Client goes here'),
                                   ('system_details', 'Details about New Client systems goes here'),
                                   ('company', user.company.company_id),
-                                  ('client_id', '')
                               ))
 
         self.assertIsNotNone(user.company.client.all())
@@ -142,7 +141,6 @@ class CreateClientTestCase(APITestCase):
                                   ('description', 'Description about New Client goes here'),
                                   ('system_details', 'Details about New Client systems goes here'),
                                   ('company', user.company.company_id),
-                                  ('client_id', '')
                               ))
 
         self.assertIsNotNone(user.company.client.all())

@@ -21,6 +21,16 @@ class CanCreateCustomerPermission(BasePermission):
             self.message = 'You must be associated with a company to create a customer.'
             return False
 
+        try:
+            client = Client.objects.get(id=request.data['client'])
+
+            if client.company.company_id != request.user.company.company_id:
+                self.message = 'Client does not belong to your company.'
+                return False
+        except Client.DoesNotExist:
+            self.message = 'Client does not exist.'
+            return False
+
         return True
 
 
@@ -28,7 +38,7 @@ class CreateCustomerAPIView(ListCreateAPIView):
     """
     Creates a new Customer.
     """
-    permission_classes = (IsAuthenticated, CanCreateCustomerPermission, )
+    permission_classes = (IsAuthenticated, CanCreateCustomerPermission,)
     serializer_class = CustomerSerializer
 
     def get_serializer(self, *args, **kwargs):
