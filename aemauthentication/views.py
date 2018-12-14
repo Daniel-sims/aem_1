@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -40,22 +41,18 @@ class CanCreateUserGroupPermission(BasePermission):
         return True
 
 
-class CreateUserAPIView(APIView):
+class CreateUserAPIView(CreateAPIView):
     """
     Creates a new User Account.
     """
     permission_classes = (IsAuthenticated, CanCreateUserGroupPermission)
     serializer_class = UserSerializer
 
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        self.serializer_class.company = request.user.company
+    def get_serializer(self, *args, **kwargs):
+        serializer = super().get_serializer(*args, **kwargs)
+        serializer.company = self.request.user.company
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return serializer
 
 
 class LoginAPIView(APIView):

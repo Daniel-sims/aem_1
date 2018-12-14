@@ -1,7 +1,10 @@
 import uuid
 
-from django.db import models, transaction
+from django.db import models, transaction, IntegrityError
 from django.db.models.manager import BaseManager
+from django.http import Http404, HttpResponseBadRequest
+from django.shortcuts import render
+from rest_framework.response import Response
 
 from aemauthentication.models import User
 from groups.models import AemGroup
@@ -22,7 +25,6 @@ class CompanyManager(models.Manager):
 
         with transaction.atomic():
             company.save()
-
             User.objects.create_user(
                 username=super_user_username,
                 password=super_user_password,

@@ -21,6 +21,10 @@ class CanCreateCustomerPermission(BasePermission):
             self.message = 'You must be associated with a company to create a customer.'
             return False
 
+        if not request.user.has_perm('customers.add_customer'):
+            self.message = 'Invalid permissions to create a customer.'
+            return False
+
         try:
             client = Client.objects.get(id=request.data['client'])
 

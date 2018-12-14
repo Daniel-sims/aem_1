@@ -4,6 +4,8 @@ from django.contrib.contenttypes.models import ContentType
 
 from aemauthentication.models import User
 from clients.models import Client
+from company.models import Company
+from customers.models import Customer
 from groups.models import AemGroup
 
 
@@ -58,8 +60,31 @@ class AemGroupFactory(factory.django.DjangoModelFactory):
             return
 
         if extracted:
-            content_type = ContentType.objects.get_for_model(Client)
-            all_permissions = Permission.objects.filter(content_type=content_type)
+            all_permissions = Permission.objects.filter(content_type=ContentType.objects.get_for_model(Client))
+            for perm in extracted:
+                for p in all_permissions:
+                    if p.name == perm:
+                        self.linked_group.permissions.add(p)
+
+    @factory.post_generation
+    def company_permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            all_permissions = Permission.objects.filter(content_type=ContentType.objects.get_for_model(Company))
+            for perm in extracted:
+                for p in all_permissions:
+                    if p.name == perm:
+                        self.linked_group.permissions.add(p)
+
+    @factory.post_generation
+    def customer_permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            all_permissions = Permission.objects.filter(content_type=ContentType.objects.get_for_model(Customer))
             for perm in extracted:
                 for p in all_permissions:
                     if p.name == perm:
