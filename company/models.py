@@ -20,15 +20,15 @@ class CompanyManager(models.Manager):
     def get_queryset(self):
         return CompanyQuerySet(self.model, using=self._db).active_and_not_deleted()
 
-    def create_company(self, name, super_user_username, super_user_password, super_user_email):
+    def create_company(self, name, user):
         company = self.model(name=name)
 
         with transaction.atomic():
             company.save()
             User.objects.create_user(
-                username=super_user_username,
-                password=super_user_password,
-                email=super_user_email,
+                username=user['username'],
+                password=user['password'],
+                email=user['email'],
                 company=company,
                 aem_group=AemGroup.objects.filter(slug_field='aem-customer-super-user').first().linked_group
             )

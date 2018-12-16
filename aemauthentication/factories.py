@@ -1,6 +1,8 @@
 import factory
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from factory import lazy_attribute
+from faker import Faker
 
 from aemauthentication.models import User
 from clients.models import Client
@@ -8,23 +10,24 @@ from company.models import Company
 from customers.models import Customer
 from groups.models import AemGroup
 
+FAKER = Faker(locale='en_US')
+
 
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
-    username = factory.Faker('first_name')
+    username = lazy_attribute(lambda x: FAKER.name())
     password = 'Password01'
-    email = factory.LazyAttribute(lambda a: '{0}@example.com'.format(a.username).lower())
+    email = lazy_attribute(lambda a: '{0}@example.com'.format(a.username).lower())
 
     @factory.post_generation
-    def groups(self, create, extracted, **kwargs):
+    def group(self, create, extracted, **kwargs):
         if not create:
             return
 
         if extracted:
-            for group in extracted:
-                self.groups.add(group.linked_group)
+            self.groups.add(extracted.linked_group)
 
 
 class GroupsFactory(factory.django.DjangoModelFactory):
@@ -62,8 +65,12 @@ class AemGroupFactory(factory.django.DjangoModelFactory):
         if extracted:
             all_permissions = Permission.objects.filter(content_type=ContentType.objects.get_for_model(Client))
             for perm in extracted:
+                # This when using has_perm you need the object type before, i.e client.add_client.
+                # but when looking for these permissions you only need add_client.
+                # to avoid multiple definitions of the same thing just split the string from the .
+                sanitized_perm_name = perm.split(".", 1)[1]
                 for p in all_permissions:
-                    if p.name == perm:
+                    if p.codename == sanitized_perm_name:
                         self.linked_group.permissions.add(p)
 
     @factory.post_generation
@@ -74,8 +81,12 @@ class AemGroupFactory(factory.django.DjangoModelFactory):
         if extracted:
             all_permissions = Permission.objects.filter(content_type=ContentType.objects.get_for_model(Company))
             for perm in extracted:
+                # This when using has_perm you need the object type before, i.e client.add_client.
+                # but when looking for these permissions you only need add_client.
+                # to avoid multiple definitions of the same thing just split the string from the .
+                sanitized_perm_name = perm.split(".", 1)[1]
                 for p in all_permissions:
-                    if p.name == perm:
+                    if p.codename == sanitized_perm_name:
                         self.linked_group.permissions.add(p)
 
     @factory.post_generation
@@ -86,6 +97,10 @@ class AemGroupFactory(factory.django.DjangoModelFactory):
         if extracted:
             all_permissions = Permission.objects.filter(content_type=ContentType.objects.get_for_model(Customer))
             for perm in extracted:
+                # This when using has_perm you need the object type before, i.e client.add_client.
+                # but when looking for these permissions you only need add_client.
+                # to avoid multiple definitions of the same thing just split the string from the .
+                sanitized_perm_name = perm.split(".", 1)[1]
                 for p in all_permissions:
-                    if p.name == perm:
+                    if p.codename == sanitized_perm_name:
                         self.linked_group.permissions.add(p)

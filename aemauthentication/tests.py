@@ -16,55 +16,108 @@ from groups.models import AemGroup
 
 
 class CreateUserTestCase(APITestCase):
+    valid_add_aem_admin_request_data = {
+        "username": "NewUser",
+        "email": "NewUser@outlook.com",
+        "password": "Passw0rd01",
+        "aem_group": settings.AEM_ADMIN_SLUG_FIELD
+    }
+
+    valid_add_aem_employee_request_data = {
+        "username": "NewUser",
+        "email": "NewUser@outlook.com",
+        "password": "Passw0rd01",
+        "aem_group": settings.AEM_EMPLOYEE_SLUG_FIELD
+    }
+
+    valid_add_aem_customer_super_user_request_data = {
+        "username": "NewUser",
+        "email": "NewUser@outlook.com",
+        "password": "Passw0rd01",
+        "aem_group": settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD
+    }
+
+    valid_add_aem_customer_admin_request_data = {
+        "username": "NewUser",
+        "email": "NewUser@outlook.com",
+        "password": "Passw0rd01",
+        "aem_group": settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD
+    }
+
+    valid_add_aem_customer_user_request_data = {
+        "username": "NewUser",
+        "email": "NewUser@outlook.com",
+        "password": "Passw0rd01",
+        "aem_group": settings.AEM_CUSTOMER_USER_SLUG_FIELD
+    }
 
     def setUp(self):
-        self.aem_admin_group = AemGroupFactory.create(
+        self.aem_admin = UserFactory.create(group=AemGroupFactory.create(
             slug_field=settings.AEM_ADMIN_SLUG_FIELD,
-            linked_group__name="Aem Admin",
-            can_add_permission_slugs=(
-                settings.AEM_EMPLOYEE_SLUG_FIELD,
-            )
-        )
+            linked_group__name=settings.AEM_ADMIN_LINKED_GROUP_NAME,
+            can_add_permission_slugs=settings.AEM_ADMIN_CAN_ADD_USER_PERMISSIONS,
+            client_permissions=settings.AEM_ADMIN_CLIENT_PERMISSIONS,
+            customer_permissions=settings.AEM_ADMIN_CUSTOMER_PERMISSIONS,
+            company_permissions=settings.AEM_ADMIN_COMPANY_PERMISSIONS
+        ))
 
-        self.aem_employee_group = AemGroupFactory.create(
+        self.aem_employee = UserFactory.create(group=AemGroupFactory.create(
             slug_field=settings.AEM_EMPLOYEE_SLUG_FIELD,
-            linked_group__name="Aem Employee",
-            can_add_permission_slugs=()
-        )
+            linked_group__name=settings.AEM_EMPLOYEE_LINKED_GROUP_NAME,
+            can_add_permission_slugs=settings.AEM_EMPLOYEE_CAN_ADD_USER_PERMISSIONS,
+            client_permissions=settings.AEM_EMPLOYEE_CLIENT_PERMISSIONS,
+            customer_permissions=settings.AEM_EMPLOYEE_CUSTOMER_PERMISSIONS,
+            company_permissions=settings.AEM_EMPLOYEE_COMPANY_PERMISSIONS
+        ))
 
-        self.aem_customer_super_user_group = AemGroupFactory.create(
-            slug_field=settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD,
-            linked_group__name="Aem Customer Super Admin",
-            can_add_permission_slugs=(
-                settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
-                settings.AEM_CUSTOMER_USER_SLUG_FIELD,
+        client_company = CompanyFactory.create()
+
+        self.aem_customer_super_user = UserFactory.create(
+            company=client_company,
+            group=AemGroupFactory.create(
+                slug_field=settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD,
+                linked_group__name=settings.AEM_CUSTOMER_SUPER_USER_LINKED_GROUP_NAME,
+                can_add_permission_slugs=settings.AEM_CUSTOMER_SUPER_USER_CAN_ADD_USER_PERMISSIONS,
+                client_permissions=settings.AEM_CUSTOMER_SUPER_USER_CLIENT_PERMISSIONS,
+                customer_permissions=settings.AEM_CUSTOMER_SUPER_USER_CUSTOMER_PERMISSIONS,
+                company_permissions=settings.AEM_CUSTOMER_SUPER_USER_COMPANY_PERMISSIONS
             )
         )
 
-        self.aem_customer_admin_group = AemGroupFactory.create(
-            slug_field=settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
-            linked_group__name="Aem Customer Admin",
-            can_add_permission_slugs=(
-                settings.AEM_CUSTOMER_USER_SLUG_FIELD,
+        self.aem_customer_admin = UserFactory.create(
+            company=client_company,
+            group=AemGroupFactory.create(
+                slug_field=settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
+                linked_group__name=settings.AEM_CUSTOMER_ADMIN_LINKED_GROUP_NAME,
+                can_add_permission_slugs=settings.AEM_CUSTOMER_ADMIN_CAN_ADD_USER_PERMISSIONS,
+                client_permissions=settings.AEM_CUSTOMER_ADMIN_CLIENT_PERMISSIONS,
+                customer_permissions=settings.AEM_CUSTOMER_ADMIN_CUSTOMER_PERMISSIONS,
+                company_permissions=settings.AEM_CUSTOMER_ADMIN_COMPANY_PERMISSIONS
             )
         )
 
-        self.aem_customer_user_group = AemGroupFactory.create(
-            slug_field=settings.AEM_CUSTOMER_USER_SLUG_FIELD,
-            linked_group__name="Aem Customer User",
-            can_add_permission_slugs=())
+        self.aem_customer_user = UserFactory.create(
+            company=client_company,
+            group=AemGroupFactory.create(
+                slug_field=settings.AEM_CUSTOMER_USER_SLUG_FIELD,
+                linked_group__name=settings.AEM_CUSTOMER_USER_LINKED_GROUP_NAME,
+                can_add_permission_slugs=settings.AEM_CUSTOMER_USER_CAN_ADD_USER_PERMISSIONS,
+                client_permissions=settings.AEM_CUSTOMER_USER_CLIENT_PERMISSIONS,
+                customer_permissions=settings.AEM_CUSTOMER_USER_CUSTOMER_PERMISSIONS,
+                company_permissions=settings.AEM_CUSTOMER_USER_COMPANY_PERMISSIONS
+            )
+        )
 
-    def _test_permission(self, user, data, expected_status_code, response_contains_kvp=None):
+    def _test_create_user_view_permissions(self, user, data, expected_status_code, response_keys=None):
         self.client.force_authenticate(user=user)
         response = self.client.post(reverse('create-user'), data, format='json')
 
         self.assertEqual(response.status_code, expected_status_code, response.content)
 
-        if response_contains_kvp:
-            for kvp in response_contains_kvp:
-                response_field = response.json()[kvp[0]]
+        if response_keys:
+            for key in response_keys:
+                response_field = response.json()[key]
                 self.assertIsNotNone(response_field)
-                self.assertTrue(kvp[1], response_field)
 
     """
     AEM Admin
@@ -78,71 +131,38 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_admin_cant_create_aem_admin(self):
-        user = UserFactory.create(groups=(self.aem_admin_group,))
-
-        self._test_permission(user=user, data={
-            "username": "newAemAdmin",
-            "email": "newAemAdmin@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_ADMIN_SLUG_FIELD
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_admin,
+                                                data=self.valid_add_aem_admin_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_admin_can_create_aem_employee(self):
-        user = UserFactory.create(groups=(self.aem_admin_group,))
-        self._test_permission(user=user, data={
-            "username": "newAemEmployee",
-            "email": "newAemEmployee@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_EMPLOYEE_SLUG_FIELD
-        }, expected_status_code=status.HTTP_201_CREATED,
-                              response_contains_kvp=(
-                                  ('username', 'newAemEmployee'),
-                                  ('email', 'newAemEmployee@outlook.com'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_admin,
+                                                data=self.valid_add_aem_employee_request_data,
+                                                expected_status_code=status.HTTP_201_CREATED,
+                                                response_keys=('username', 'email',))
 
-        new_user = User.objects.get(username='newAemEmployee')
+        new_user = User.objects.get(username='NewUser')
         self.assertIsNotNone(new_user)
         self.assertTrue(new_user.groups.filter(aemgroup__slug_field=settings.AEM_EMPLOYEE_SLUG_FIELD).exists())
-        self.assertIsNone(new_user.company)
 
     def test_aem_admin_cant_create_aem_customer_super_user(self):
-        user = UserFactory.create(groups=(self.aem_admin_group,))
-        self._test_permission(user=user, data={
-            "username": "newCustomerSuperUser",
-            "email": "newCustomerSuperUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_admin,
+                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_admin_cant_create_aem_customer_admin(self):
-        user = UserFactory.create(groups=(self.aem_admin_group,))
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerAdmin",
-            "email": "newAemCustomerAdmin@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_admin,
+                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_admin_can_create_aem_customer_user(self):
-        user = UserFactory.create(groups=(self.aem_admin_group,))
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_admin,
+                                                data=self.valid_add_aem_customer_user_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     """
     AEM Employee
@@ -156,65 +176,34 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_employee_cant_create_aem_admin(self):
-        user = UserFactory.create(groups=(self.aem_employee_group,))
-
-        self._test_permission(user=user, data={
-            "username": "newAemAdmin",
-            "email": "newAemAdmin@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_ADMIN_SLUG_FIELD
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_employee,
+                                                data=self.valid_add_aem_admin_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_employee_cant_create_aem_employee(self):
-        user = UserFactory.create(groups=(self.aem_employee_group,))
-        self._test_permission(user=user, data={
-            "username": "newAemEmployee",
-            "email": "newAemEmployee@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_EMPLOYEE_SLUG_FIELD
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_employee,
+                                                data=self.valid_add_aem_employee_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_employee_cant_create_aem_customer_super_user(self):
-        user = UserFactory.create(groups=(self.aem_employee_group,))
-        self._test_permission(user=user, data={
-            "username": "newCustomerSuperUser",
-            "email": "newCustomerSuperUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_employee,
+                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_employee_cant_create_aem_customer_admin(self):
-        user = UserFactory.create(groups=(self.aem_employee_group,))
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerAdmin",
-            "email": "newAemCustomerAdmin@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_employee,
+                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_employee_can_create_aem_customer_user(self):
-        user = UserFactory.create(groups=(self.aem_employee_group,))
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_employee,
+                                                data=self.valid_add_aem_customer_user_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     """
     AEM Customer Super User
@@ -228,87 +217,34 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_customer_super_user_cant_create_aem_admin(self):
-        user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_ADMIN_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_super_user,
+                                                data=self.valid_add_aem_admin_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_super_user_cant_create_aem_employee(self):
-        user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_EMPLOYEE_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_super_user,
+                                                data=self.valid_add_aem_employee_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_super_user_cant_create_aem_customer_super_user(self):
-        user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_super_user,
+                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_super_user_can_create_aem_customer_admin(self):
-        user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerAdmin",
-            "email": "newAemCustomerAdmin@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_201_CREATED,
-                              response_contains_kvp=(
-                                  ('company', user.company.id),
-                                  ('username', 'newAemCustomerAdmin'),
-                                  ('email', 'newAemCustomerAdmin@outlook.com'),
-                              ))
-
-        new_user = User.objects.get(username='newAemCustomerAdmin')
-        self.assertIsNotNone(new_user)
-        self.assertEqual(user.company, new_user.company)
-        self.assertTrue(new_user.groups.filter(aemgroup__slug_field=settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD).exists())
+        self._test_create_user_view_permissions(user=self.aem_customer_super_user,
+                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                expected_status_code=status.HTTP_201_CREATED,
+                                                response_keys=('username', 'email',))
 
     def test_aem_customer_super_user_can_create_aem_customer_user(self):
-        user = UserFactory.create(groups=(self.aem_customer_super_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_201_CREATED,
-                              response_contains_kvp=(
-                                  ('company', user.company.id),
-                                  ('username', 'newAemCustomerUser'),
-                                  ('email', 'newAemCustomerUser@outlook.com'),
-                              ))
-        new_user = User.objects.get(username='newAemCustomerUser')
-        self.assertIsNotNone(new_user)
-        self.assertEqual(user.company, new_user.company)
-        self.assertTrue(new_user.groups.filter(aemgroup__slug_field=settings.AEM_CUSTOMER_USER_SLUG_FIELD).exists())
+        self._test_create_user_view_permissions(user=self.aem_customer_super_user,
+                                                data=self.valid_add_aem_customer_user_request_data,
+                                                expected_status_code=status.HTTP_201_CREATED,
+                                                response_keys=('username', 'email',))
 
     """
     AEM Customer Admin
@@ -322,81 +258,34 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_customer_admin_cant_create_aem_admin(self):
-        user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_ADMIN_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_admin,
+                                                data=self.valid_add_aem_admin_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_admin_cant_create_aem_employee(self):
-        user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_EMPLOYEE_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_admin,
+                                                data=self.valid_add_aem_employee_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_admin_cant_create_aem_customer_super_user(self):
-        user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_admin,
+                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_admin_cant_create_aem_customer_admin(self):
-        user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerAdmin",
-            "email": "newAemCustomerAdmin@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_admin,
+                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_admin_can_create_aem_customer_user(self):
-        user = UserFactory.create(groups=(self.aem_customer_admin_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_201_CREATED,
-                              response_contains_kvp=(
-                                  ('company', user.company.id),
-                                  ('email', 'newAemCustomerUser@outlook.com'),
-                                  ('username', 'newAemCustomerUser'),
-                              ))
-
-        new_user = User.objects.get(username='newAemCustomerUser')
-        self.assertIsNotNone(new_user)
-        self.assertEqual(user.company, new_user.company)
-        self.assertTrue(new_user.groups.filter(aemgroup__slug_field=settings.AEM_CUSTOMER_USER_SLUG_FIELD).exists())
+        self._test_create_user_view_permissions(user=self.aem_customer_admin,
+                                                data=self.valid_add_aem_customer_user_request_data,
+                                                expected_status_code=status.HTTP_201_CREATED,
+                                                response_keys=('username', 'email',))
 
     """
     AEM Customer User
@@ -410,71 +299,31 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_customer_user_cant_create_aem_admin(self):
-        user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_ADMIN_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_user,
+                                                data=self.valid_add_aem_admin_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_user_cant_create_aem_employee(self):
-        user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_EMPLOYEE_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_user,
+                                                data=self.valid_add_aem_employee_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_user_cant_create_aem_customer_super_user(self):
-        user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_user,
+                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_user_cant_create_aem_customer_admin(self):
-        user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerAdmin",
-            "email": "newAemCustomerAdmin@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_user,
+                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))
 
     def test_aem_customer_user_cant_create_aem_customer_user(self):
-        user = UserFactory.create(groups=(self.aem_customer_user_group,),
-                                  company=CompanyFactory.create())
-
-        self._test_permission(user=user, data={
-            "username": "newAemCustomerUser",
-            "email": "newAemCustomerUser@outlook.com",
-            "password": "Passw0rd01",
-            "aem_group": settings.AEM_CUSTOMER_USER_SLUG_FIELD,
-        }, expected_status_code=status.HTTP_403_FORBIDDEN,
-                              response_contains_kvp=(
-                                  ('detail', 'Invalid permissions to create this account type.'),
-                              ))
+        self._test_create_user_view_permissions(user=self.aem_customer_user,
+                                                data=self.valid_add_aem_customer_user_request_data,
+                                                expected_status_code=status.HTTP_403_FORBIDDEN,
+                                                response_keys=('detail',))

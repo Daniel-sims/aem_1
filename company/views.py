@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import JsonResponse
 from rest_framework import status, permissions
 from rest_framework.exceptions import ParseError
@@ -14,7 +15,7 @@ class CanCreateCompanyPermission(BasePermission):
     message = "Invalid permissions to create a company."
 
     def has_permission(self, request, view):
-        return request.user.has_perm('company.add_company')
+        return request.user.has_perm(settings.ADD_COMPANY_PERMISSION)
 
 
 class ListCreateCompanyAPIView(ListCreateAPIView):

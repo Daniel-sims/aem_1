@@ -1,5 +1,6 @@
 import itertools
 
+from django.conf import settings
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,7 +22,7 @@ class CanCreateCustomerPermission(BasePermission):
             self.message = 'You must be associated with a company to create a customer.'
             return False
 
-        if not request.user.has_perm('customers.add_customer'):
+        if not request.user.has_perm(settings.ADD_CUSTOMER_PERMISSION):
             self.message = 'Invalid permissions to create a customer.'
             return False
 

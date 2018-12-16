@@ -16,7 +16,6 @@ import datetime
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
@@ -27,7 +26,8 @@ SECRET_KEY = '%ng79^xhmwgvq+a35bn65kt*vs#whkiekq*0gn&g%+^!2wyk*q'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -70,19 +70,19 @@ AUTH_USER_MODEL = 'aemauthentication.User'
 # JWT settings
 JWT_AUTH = {
     'JWT_ENCODE_HANDLER':
-    'rest_framework_jwt.utils.jwt_encode_handler',
+        'rest_framework_jwt.utils.jwt_encode_handler',
 
     'JWT_DECODE_HANDLER':
-    'rest_framework_jwt.utils.jwt_decode_handler',
+        'rest_framework_jwt.utils.jwt_decode_handler',
 
     'JWT_PAYLOAD_HANDLER':
-    'rest_framework_jwt.utils.jwt_payload_handler',
+        'rest_framework_jwt.utils.jwt_payload_handler',
 
     'JWT_PAYLOAD_GET_USER_ID_HANDLER':
-    'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
+        'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
 
     'JWT_RESPONSE_PAYLOAD_HANDLER':
-    'rest_framework_jwt.utils.jwt_response_payload_handler',
+        'rest_framework_jwt.utils.jwt_response_payload_handler',
 
     'JWT_SECRET_KEY': SECRET_KEY,
     'JWT_GET_USER_SECRET_KEY': None,
@@ -133,7 +133,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'aem.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
@@ -143,7 +142,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -163,7 +161,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
@@ -177,11 +174,21 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+"""
+ USER GROUPS AND PERMISSION CONSTANTS
+"""
+
+# Aem Group linked_group names (Names of the Group to associate the AemGroup with.
+AEM_ADMIN_LINKED_GROUP_NAME = "Aem Admin"
+AEM_EMPLOYEE_LINKED_GROUP_NAME = "Aem Employee"
+AEM_CUSTOMER_SUPER_USER_LINKED_GROUP_NAME = "Aem Customer Super User"
+AEM_CUSTOMER_ADMIN_LINKED_GROUP_NAME = "Aem Customer Admin"
+AEM_CUSTOMER_USER_LINKED_GROUP_NAME = "Aem Customer User"
 
 # Slug fields for user groups
 AEM_SUPER_USER_SLUG_FIELD = "aem-super-user"
@@ -193,3 +200,87 @@ AEM_CUSTOMER_USER_SLUG_FIELD = "aem-customer-user"
 
 # Slug fields for creating clients
 ADD_CLIENT_PERMISSION = "clients.add_client"
+ADD_CUSTOMER_PERMISSION = "customers.add_customer"
+ADD_COMPANY_PERMISSION = "company.add_company"
+
+"""
+    PERMISSIONS
+    
+    These permissions outline the permissions that each user type has access to. 
+    These are mainly used in tests to assure that the correct access is given.
+"""
+
+# USER PERMISSIONS
+AEM_ADMIN_CAN_ADD_USER_PERMISSIONS = (
+    AEM_EMPLOYEE_SLUG_FIELD,
+)
+
+AEM_EMPLOYEE_CAN_ADD_USER_PERMISSIONS = (
+)
+
+AEM_CUSTOMER_SUPER_USER_CAN_ADD_USER_PERMISSIONS = (
+    AEM_CUSTOMER_ADMIN_SLUG_FIELD,
+    AEM_CUSTOMER_USER_SLUG_FIELD,
+)
+
+AEM_CUSTOMER_ADMIN_CAN_ADD_USER_PERMISSIONS = (
+    AEM_CUSTOMER_USER_SLUG_FIELD,
+)
+
+AEM_CUSTOMER_USER_CAN_ADD_USER_PERMISSIONS = (
+)
+
+# CLIENT PERMISSIONS
+AEM_ADMIN_CLIENT_PERMISSIONS = (
+)
+
+AEM_EMPLOYEE_CLIENT_PERMISSIONS = (
+)
+
+AEM_CUSTOMER_SUPER_USER_CLIENT_PERMISSIONS = (
+    ADD_CLIENT_PERMISSION,
+)
+
+AEM_CUSTOMER_ADMIN_CLIENT_PERMISSIONS = (
+    ADD_CLIENT_PERMISSION,
+)
+
+AEM_CUSTOMER_USER_CLIENT_PERMISSIONS = (
+)
+
+# CUSTOMER PERMISSIONS
+AEM_ADMIN_CUSTOMER_PERMISSIONS = (
+)
+
+AEM_EMPLOYEE_CUSTOMER_PERMISSIONS = (
+)
+
+AEM_CUSTOMER_SUPER_USER_CUSTOMER_PERMISSIONS = (
+    ADD_CUSTOMER_PERMISSION,
+)
+
+AEM_CUSTOMER_ADMIN_CUSTOMER_PERMISSIONS = (
+    ADD_CUSTOMER_PERMISSION,
+)
+
+AEM_CUSTOMER_USER_CUSTOMER_PERMISSIONS = (
+)
+
+# COMPANY PERMISSIONS
+AEM_ADMIN_COMPANY_PERMISSIONS = (
+    ADD_COMPANY_PERMISSION,
+)
+
+AEM_EMPLOYEE_COMPANY_PERMISSIONS = (
+    ADD_COMPANY_PERMISSION,
+)
+
+AEM_CUSTOMER_SUPER_USER_COMPANY_PERMISSIONS = (
+
+)
+
+AEM_CUSTOMER_ADMIN_COMPANY_PERMISSIONS = (
+)
+
+AEM_CUSTOMER_USER_COMPANY_PERMISSIONS = (
+)

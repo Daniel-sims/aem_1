@@ -15,7 +15,6 @@ class CanCreateUserGroupPermission(BasePermission):
     message = "Invalid permissions to create customer."
 
     def has_permission(self, request, view):
-        # First check to see if the user has permission to create the new account
         if not request.user.has_perm('groups.can_add_{}'.format(request.data.get('aem_group'))):
             self.message = "Invalid permissions to create this account type."
             return False
