@@ -33,6 +33,7 @@ class UserFactory(factory.django.DjangoModelFactory):
 class GroupsFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Group
+        django_get_or_create = ('name',)
 
     name = ""
 
@@ -40,6 +41,7 @@ class GroupsFactory(factory.django.DjangoModelFactory):
 class AemGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AemGroup
+        django_get_or_create = ('slug_field',)
 
     linked_group = factory.SubFactory(GroupsFactory)
     slug_field = ""
