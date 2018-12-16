@@ -16,39 +16,11 @@ from groups.models import AemGroup
 
 
 class CreateUserTestCase(APITestCase):
-    valid_add_aem_admin_request_data = {
+    valid_add_user_request = {
         "username": "NewUser",
         "email": "NewUser@outlook.com",
         "password": "Passw0rd01",
-        "aem_group": settings.AEM_ADMIN_SLUG_FIELD
-    }
-
-    valid_add_aem_employee_request_data = {
-        "username": "NewUser",
-        "email": "NewUser@outlook.com",
-        "password": "Passw0rd01",
-        "aem_group": settings.AEM_EMPLOYEE_SLUG_FIELD
-    }
-
-    valid_add_aem_customer_super_user_request_data = {
-        "username": "NewUser",
-        "email": "NewUser@outlook.com",
-        "password": "Passw0rd01",
-        "aem_group": settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD
-    }
-
-    valid_add_aem_customer_admin_request_data = {
-        "username": "NewUser",
-        "email": "NewUser@outlook.com",
-        "password": "Passw0rd01",
-        "aem_group": settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD
-    }
-
-    valid_add_aem_customer_user_request_data = {
-        "username": "NewUser",
-        "email": "NewUser@outlook.com",
-        "password": "Passw0rd01",
-        "aem_group": settings.AEM_CUSTOMER_USER_SLUG_FIELD
+        "aem_group": ""
     }
 
     def setUp(self):
@@ -131,36 +103,38 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_admin_cant_create_aem_admin(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_ADMIN_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_admin,
-                                                data=self.valid_add_aem_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_admin_can_create_aem_employee(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_EMPLOYEE_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_admin,
-                                                data=self.valid_add_aem_employee_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_201_CREATED,
                                                 response_keys=('username', 'email',))
 
-        new_user = User.objects.get(username='NewUser')
+        new_user = User.objects.get(username=self.valid_add_user_request['username'])
         self.assertIsNotNone(new_user)
         self.assertTrue(new_user.groups.filter(aemgroup__slug_field=settings.AEM_EMPLOYEE_SLUG_FIELD).exists())
 
     def test_aem_admin_cant_create_aem_customer_super_user(self):
         self._test_create_user_view_permissions(user=self.aem_admin,
-                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_admin_cant_create_aem_customer_admin(self):
         self._test_create_user_view_permissions(user=self.aem_admin,
-                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_admin_can_create_aem_customer_user(self):
         self._test_create_user_view_permissions(user=self.aem_admin,
-                                                data=self.valid_add_aem_customer_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
@@ -176,32 +150,37 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_employee_cant_create_aem_admin(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_ADMIN_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_employee,
-                                                data=self.valid_add_aem_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_employee_cant_create_aem_employee(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_EMPLOYEE_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_employee,
-                                                data=self.valid_add_aem_employee_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_employee_cant_create_aem_customer_super_user(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_employee,
-                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_employee_cant_create_aem_customer_admin(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_employee,
-                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_employee_can_create_aem_customer_user(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_USER_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_employee,
-                                                data=self.valid_add_aem_customer_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
@@ -217,34 +196,47 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_customer_super_user_cant_create_aem_admin(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_ADMIN_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_super_user,
-                                                data=self.valid_add_aem_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_super_user_cant_create_aem_employee(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_EMPLOYEE_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_super_user,
-                                                data=self.valid_add_aem_employee_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_super_user_cant_create_aem_customer_super_user(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_super_user,
-                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_super_user_can_create_aem_customer_admin(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_super_user,
-                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_201_CREATED,
                                                 response_keys=('username', 'email',))
 
+        new_user = User.objects.get(username=self.valid_add_user_request['username'])
+        self.assertIsNotNone(new_user)
+        self.assertTrue(new_user.groups.filter(aemgroup__slug_field=settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD).exists())
+
     def test_aem_customer_super_user_can_create_aem_customer_user(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_USER_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_super_user,
-                                                data=self.valid_add_aem_customer_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_201_CREATED,
                                                 response_keys=('username', 'email',))
+
+        new_user = User.objects.get(username=self.valid_add_user_request['username'])
+        self.assertIsNotNone(new_user)
+        self.assertTrue(new_user.groups.filter(aemgroup__slug_field=settings.AEM_CUSTOMER_USER_SLUG_FIELD).exists())
 
     """
     AEM Customer Admin
@@ -258,34 +250,43 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_customer_admin_cant_create_aem_admin(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_ADMIN_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_admin,
-                                                data=self.valid_add_aem_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_admin_cant_create_aem_employee(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_EMPLOYEE_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_admin,
-                                                data=self.valid_add_aem_employee_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_admin_cant_create_aem_customer_super_user(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_admin,
-                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_admin_cant_create_aem_customer_admin(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_admin,
-                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_admin_can_create_aem_customer_user(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_USER_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_admin,
-                                                data=self.valid_add_aem_customer_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_201_CREATED,
                                                 response_keys=('username', 'email',))
+
+        new_user = User.objects.get(username=self.valid_add_user_request['username'])
+        self.assertIsNotNone(new_user)
+        self.assertTrue(new_user.groups.filter(aemgroup__slug_field=settings.AEM_CUSTOMER_USER_SLUG_FIELD).exists())
 
     """
     AEM Customer User
@@ -299,31 +300,36 @@ class CreateUserTestCase(APITestCase):
     """
 
     def test_aem_customer_user_cant_create_aem_admin(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_ADMIN_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_user,
-                                                data=self.valid_add_aem_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_user_cant_create_aem_employee(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_EMPLOYEE_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_user,
-                                                data=self.valid_add_aem_employee_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_user_cant_create_aem_customer_super_user(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_SUPER_USER_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_user,
-                                                data=self.valid_add_aem_customer_super_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_user_cant_create_aem_customer_admin(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_ADMIN_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_user,
-                                                data=self.valid_add_aem_customer_admin_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
 
     def test_aem_customer_user_cant_create_aem_customer_user(self):
+        self.valid_add_user_request['aem_group'] = settings.AEM_CUSTOMER_USER_SLUG_FIELD
         self._test_create_user_view_permissions(user=self.aem_customer_user,
-                                                data=self.valid_add_aem_customer_user_request_data,
+                                                data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_403_FORBIDDEN,
                                                 response_keys=('detail',))
