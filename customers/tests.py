@@ -11,6 +11,7 @@ from django.conf import settings
 from clients.factories import ClientFactory
 from clients.models import Client
 from company.factories import CompanyFactory
+from customers.models import Customer
 
 
 class CreateCustomerTestCase(APITestCase):
@@ -96,8 +97,6 @@ class CreateCustomerTestCase(APITestCase):
             )
         )
 
-
-
     def _test_list_create_customer_view_permissions(self, user, data, expected_status_code, response_keys=None):
         self.client.force_authenticate(user=user)
         response = self.client.post(reverse('list-create-customer'), data, format='json')
@@ -114,7 +113,7 @@ class CreateCustomerTestCase(APITestCase):
         self._test_list_create_customer_view_permissions(user=self.aem_admin,
                                                          data=self.valid_add_customer_request,
                                                          expected_status_code=status.HTTP_403_FORBIDDEN,
-                                                         response_keys=('detail', ))
+                                                         response_keys=('detail',))
 
     def test_aem_employee_cant_create_customer(self):
         self.valid_add_customer_request['client'] = 1
@@ -137,6 +136,12 @@ class CreateCustomerTestCase(APITestCase):
                                                                         'landline_number', 'email', 'description',
                                                                         'system_details'))
 
+        self.assertEqual(len(client_to_add_customer_to.customer.all()), 1)
+
+        new_customer = client_to_add_customer_to.customer.get(name=self.valid_add_customer_request['name'])
+        self.assertIsNotNone(new_customer)
+        self.assertEqual(new_customer.client.company.id, self.aem_customer_super_user.company.id)
+
     def test_aem_customer_admin_can_create_customer(self):
         user = self.aem_customer_admin
         ClientFactory(company=user.company)
@@ -150,6 +155,12 @@ class CreateCustomerTestCase(APITestCase):
                                                          response_keys=('id', 'name', 'account_number', 'mobile_number',
                                                                         'landline_number', 'email', 'description',
                                                                         'system_details'))
+
+        self.assertEqual(len(client_to_add_customer_to.customer.all()), 1)
+
+        new_customer = client_to_add_customer_to.customer.get(name=self.valid_add_customer_request['name'])
+        self.assertIsNotNone(new_customer)
+        self.assertEqual(new_customer.client.company.id, self.aem_customer_super_user.company.id)
 
     def test_aem_customer_user_cant_create_customer(self):
         user = self.aem_customer_admin

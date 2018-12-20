@@ -105,7 +105,6 @@ class CreateClientTestCase(APITestCase):
                                                       response_keys=('detail',))
 
     def test_aem_customer_super_user_can_create_client(self):
-        user = self.aem_customer_super_user
         self._test_list_create_client_view_permission(user=self.aem_customer_super_user,
                                                       data=self.valid_client_request_data,
                                                       expected_status_code=status.HTTP_201_CREATED,
@@ -114,7 +113,9 @@ class CreateClientTestCase(APITestCase):
                                                           'email', 'description',
                                                           'system_details'))
 
-        self.assertEqual(len(user.company.client.all()), 1)
+        new_client = Client.objects.get(name=self.valid_client_request_data['name'])
+        self.assertIsNotNone(new_client)
+        self.assertEqual(new_client.company.id, self.aem_customer_super_user.company.id)
 
     def test_aem_customer_customer_admin_can_create_client(self):
         user = self.aem_customer_super_user
@@ -126,7 +127,9 @@ class CreateClientTestCase(APITestCase):
                                                           'email', 'description',
                                                           'system_details'))
 
-        self.assertEqual(len(user.company.client.all()), 1)
+        new_client = Client.objects.get(name=self.valid_client_request_data['name'])
+        self.assertIsNotNone(new_client)
+        self.assertEqual(new_client.company.id, self.aem_customer_super_user.company.id)
 
     def test_aem_customer_user_cant_create_client(self):
         self._test_list_create_client_view_permission(user=self.aem_employee,
