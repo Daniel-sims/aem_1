@@ -10,6 +10,29 @@ from aemauthentication.models import User
 from groups.models import AemGroup
 
 
+class CompanyModuleQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+
+class CompanyModuleManager(models.Manager):
+
+    def get_queryset(self):
+        return CompanyModuleQuerySet(self.model, using=self._db).active()
+
+
+class CompanyModule(models.Model):
+    name = models.CharField(max_length=100, blank=False, null=False)
+    slug_field = models.SlugField(max_length=100, blank=False, null=False)
+
+    is_active = models.BooleanField(default=True)
+
+    objects = CompanyModuleManager()
+
+    def __str__(self):
+        return self.name
+
+
 class CompanyQuerySet(models.QuerySet):
     def active_and_not_deleted(self):
         return self.filter(is_deleted=False, is_active=True)
@@ -38,6 +61,7 @@ class CompanyManager(models.Manager):
 
 class Company(models.Model):
     name = models.CharField(max_length=100, blank=False, null=False)
+    modules = models.ManyToManyField(CompanyModule)
 
     is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
@@ -46,3 +70,4 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
+
