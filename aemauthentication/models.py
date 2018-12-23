@@ -21,8 +21,15 @@ class UserManager(BaseUserManager):
     def get_queryset(self):
         return UserQuerySet(self.model, using=self._db).active_and_not_deleted()
 
-    def create_user(self, username, email, password, aem_group=None, company=None):
-        user = self.model(username=username, email=self.normalize_email(email), company=company)
+    def create_user(self, username, email, password, first_name=None, last_name=None, role=None, aem_group=None, company=None):
+        user = self.model(
+            username=username,
+            email=self.normalize_email(email),
+            company=company,
+            first_name=first_name,
+            last_name=last_name,
+            role=role
+        )
 
         with transaction.atomic():
             user.set_password(password)
@@ -54,6 +61,12 @@ class User(AbstractUser):
 
     # Indicates whether this user has been deleted or not
     is_deleted = models.BooleanField(default=False)
+
+    first_name = models.CharField(max_length=64, blank=True, null=True)
+
+    last_name = models.CharField(max_length=64, blank=True, null=True)
+
+    role = models.CharField(max_length=64, blank=True, null=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']

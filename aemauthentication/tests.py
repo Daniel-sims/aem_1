@@ -20,7 +20,10 @@ class CreateUserTestCase(APITestCase):
         "username": "NewUser",
         "email": "NewUser@outlook.com",
         "password": "Passw0rd01",
-        "aem_group": ""
+        "aem_group": "",
+        "first_name": "Daniel",
+        "last_name": "Sims",
+        "role": "Meme Master"
     }
 
     def setUp(self):
@@ -114,7 +117,7 @@ class CreateUserTestCase(APITestCase):
         self._test_create_user_view_permissions(user=self.aem_admin,
                                                 data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_201_CREATED,
-                                                response_keys=('username', 'email',))
+                                                response_keys=('username', 'email', 'first_name', 'last_name', 'role'))
 
         new_user = User.objects.get(username=self.valid_add_user_request['username'])
         self.assertIsNotNone(new_user)
@@ -221,7 +224,7 @@ class CreateUserTestCase(APITestCase):
         self._test_create_user_view_permissions(user=self.aem_customer_super_user,
                                                 data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_201_CREATED,
-                                                response_keys=('username', 'email',))
+                                                response_keys=('username', 'email', 'first_name', 'last_name', 'role'))
 
         new_user = User.objects.get(username=self.valid_add_user_request['username'])
         self.assertIsNotNone(new_user)
@@ -232,7 +235,7 @@ class CreateUserTestCase(APITestCase):
         self._test_create_user_view_permissions(user=self.aem_customer_super_user,
                                                 data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_201_CREATED,
-                                                response_keys=('username', 'email',))
+                                                response_keys=('username', 'email', 'first_name', 'last_name', 'role'))
 
         new_user = User.objects.get(username=self.valid_add_user_request['username'])
         self.assertIsNotNone(new_user)
@@ -282,7 +285,7 @@ class CreateUserTestCase(APITestCase):
         self._test_create_user_view_permissions(user=self.aem_customer_admin,
                                                 data=self.valid_add_user_request,
                                                 expected_status_code=status.HTTP_201_CREATED,
-                                                response_keys=('username', 'email',))
+                                                response_keys=('username', 'email', 'first_name', 'last_name', 'role'))
 
         new_user = User.objects.get(username=self.valid_add_user_request['username'])
         self.assertIsNotNone(new_user)
