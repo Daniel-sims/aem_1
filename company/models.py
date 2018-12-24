@@ -24,6 +24,7 @@ class CompanyModuleManager(models.Manager):
 class CompanyModule(models.Model):
     name = models.CharField(max_length=100, blank=False, null=False)
     slug_field = models.SlugField(max_length=100, blank=False, null=False)
+    image_url = models.CharField(max_length=256, blank=False, null=False)
 
     is_active = models.BooleanField(default=True)
 

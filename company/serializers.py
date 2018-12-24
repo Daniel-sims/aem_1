@@ -11,7 +11,7 @@ from .models import Company, CompanyModule
 class ModulesSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyModule
-        fields = ['name', 'slug_field']
+        fields = ['name', 'slug_field', 'image_url']
 
 
 class UserSerializer(serializers.ModelSerializer):
