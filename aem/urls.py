@@ -16,6 +16,7 @@ urlpatterns = [
 
     # company
     path('company/', company_views.ListCreateCompanyAPIView.as_view(), name="list-create-company"),
+    path('company/<int:pk>/', company_views.RetrieveCompanyAPIView.as_view(), name="retrieve-company"),
 
     # clients
     path('clients/', client_views.ListCreateClientAPIView.as_view(), name="list-create-client"),

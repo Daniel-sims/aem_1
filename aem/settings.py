@@ -202,6 +202,7 @@ AEM_CUSTOMER_USER_SLUG_FIELD = "aem-customer-user"
 ADD_CLIENT_PERMISSION = "clients.add_client"
 ADD_CUSTOMER_PERMISSION = "customers.add_customer"
 ADD_COMPANY_PERMISSION = "company.add_company"
+VIEW_COMPANY_PERMISSION = "company.view_company"
 
 """
     PERMISSIONS

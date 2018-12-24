@@ -22,13 +22,13 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CompanySerializer(serializers.ModelSerializer):
     user = UserSerializer(write_only=True)
-    modules = ModulesSerializer(many=True)
+    modules = ModulesSerializer(many=True, required=False)
 
     company_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Company
-        fields = ['company_id', 'name', 'user', 'modules']
+        fields = ['pk', 'company_id', 'name', 'user', 'modules']
 
     def create(self, validated_data):
         return Company.objects.create_company(**validated_data)

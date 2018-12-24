@@ -89,13 +89,13 @@ class CreateClientTestCase(APITestCase):
         self._test_list_create_company_view_permission(user=self.aem_admin,
                                                        data=self.valid_create_company_data,
                                                        expected_status_code=status.HTTP_201_CREATED,
-                                                       response_keys=('name',))
+                                                       response_keys=('name', 'pk', 'modules'))
 
     def test_aem_employee_can_create_company(self):
         self._test_list_create_company_view_permission(user=self.aem_employee,
                                                        data=self.valid_create_company_data,
                                                        expected_status_code=status.HTTP_201_CREATED,
-                                                       response_keys=('name',))
+                                                       response_keys=('name', 'pk', 'modules'))
 
     def test_aem_customer_super_user_cant_create_company(self):
         self._test_list_create_company_view_permission(user=self.aem_customer_super_user,
@@ -114,3 +114,4 @@ class CreateClientTestCase(APITestCase):
                                                        data=self.valid_create_company_data,
                                                        expected_status_code=status.HTTP_403_FORBIDDEN,
                                                        response_keys=('detail',))
+
