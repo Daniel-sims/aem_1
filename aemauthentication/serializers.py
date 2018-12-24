@@ -41,10 +41,12 @@ class LoginSerializer(serializers.ModelSerializer):
     token = serializers.CharField(max_length=255, read_only=True)
 
     company_name = serializers.CharField(max_length=255, read_only=True)
+    company_pk = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'company_id', 'token', 'first_name', 'last_name', 'role', 'company_name']
+        fields = ['username', 'password', 'company_id', 'token', 'first_name', 'last_name', 'role', 'company_name',
+                  'company_pk']
 
     def validate(self, data):
         user = authenticate(username=data.get('username', None), password=data.get('password', None))
@@ -62,6 +64,7 @@ class LoginSerializer(serializers.ModelSerializer):
             return {
                 'token': user.token,
                 'company_name': user.company.name,
+                'company_pk': user.company.pk,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'role': user.role

@@ -40,8 +40,6 @@ class CanRetrieveCompanyPermission(BasePermission):
             if request.user.groups.filter(name__in=['AEM Admin', 'AEM Employee']) or request.user.is_superuser:
                 return True
             elif request.user.company is not None:
-                print(request.user.company.pk)
-                print(view.kwargs.get('pk', None))
                 if request.user.company.pk is view.kwargs.get('pk', None):
                     return True
                 else:
