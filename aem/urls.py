@@ -1,3 +1,4 @@
+from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
@@ -8,6 +9,7 @@ from clients import views as client_views
 from customers import views as customer_views
 
 urlpatterns = [
+
     path('admin/', admin.site.urls),
 
     # aemauthentication
@@ -24,5 +26,6 @@ urlpatterns = [
     # customers
     path('customers/', customer_views.CreateCustomerAPIView.as_view(), name="list-create-customer"),
 ]
+urlpatterns += [url(r'^silk/', include('silk.urls', namespace='silk'))]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
